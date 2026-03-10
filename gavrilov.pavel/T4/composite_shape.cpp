@@ -1,8 +1,12 @@
 #include "composite_shape.h"
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
 
 void CompositeShape::addShape(std::unique_ptr<Shape> shape) {
+    if (!shape) {
+        throw std::invalid_argument("Cannot add null shape to CompositeShape");
+    }
     shapes.push_back(std::move(shape));
 }
 
@@ -26,7 +30,6 @@ Point CompositeShape::getCenter() const {
 
     for (const auto& shape : shapes) {
         Point center = shape->getCenter();
-
         minX = std::min(minX, center.x);
         minY = std::min(minY, center.y);
         maxX = std::max(maxX, center.x);
@@ -47,7 +50,6 @@ void CompositeShape::scale(double factor) {
 
     for (auto& shape : shapes) {
         Point shapeCenter = shape->getCenter();
-
         double dx = shapeCenter.x - compositeCenter.x;
         double dy = shapeCenter.y - compositeCenter.y;
 
@@ -73,8 +75,7 @@ void CompositeShape::printInfo() const {
 
         if (i < shapes.size() - 1) {
             printf(",\n");
-        }
-        else {
+        } else {
             printf("\n");
         }
     }
