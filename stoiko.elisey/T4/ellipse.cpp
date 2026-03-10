@@ -1,13 +1,13 @@
 #include "ellipse.h"
 
-Ellipse::Ellipse(const Point& center, double r1, double r2)
+Ellipse::Ellipse(const Point& center, double horizontal_radius, double vertical_radius)
     : center(center)
-    , r1(r1)
-    , r2(r2)
+    , horizontal_radius(horizontal_radius)
+    , vertical_radius(vertical_radius)
 {}
 
 double Ellipse::getArea() const {
-    return M_PI * r1 * r2;
+    return M_PI * horizontal_radius * vertical_radius;
 }
 
 Point Ellipse::getCenter() const {
@@ -20,8 +20,8 @@ void Ellipse::move(double dx, double dy)  {
 }
 
 void Ellipse::scale(double factor)  {
-    r1 *= factor;
-    r2 *= factor;
+    horizontal_radius *= factor;
+    vertical_radius *= factor;
 }
 
 std::string Ellipse::getName() const {
@@ -30,8 +30,8 @@ std::string Ellipse::getName() const {
 
 std::pair<Point, Point> Ellipse::getBounds() const {
     return {
-        Point(center.x - r2, center.y - r1),
-        Point(center.x + r2, center.y + r1)
+        Point(center.x - vertical_radius, center.y - horizontal_radius),
+        Point(center.x + vertical_radius, center.y + horizontal_radius)
     };
 }
 

@@ -9,10 +9,10 @@
 class Ellipse : public Shape {
 private:
     Point center;
-    double r1;
-    double r2;
+    double horizontal_radius;
+    double vertical_radius;
 public:
-    Ellipse(const Point& center, double r1, double r2);
+    Ellipse(const Point& center, double horizontal_radius, double vertical_radius);
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;
