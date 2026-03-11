@@ -9,7 +9,8 @@ double Square::getArea() const {
 }
 
 Point Square::getCenter() const {
-    return Point(bottomLeft_.x + side_ / 2, bottomLeft_.y + side_ / 2);
+    return Point(bottomLeft_.x + side_ / 2,
+        bottomLeft_.y + side_ / 2);
 }
 
 void Square::move(double dx, double dy) {

@@ -10,7 +10,6 @@ private:
 
 public:
     Ring(const Point& center, double outRad, double inRad);
-
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;

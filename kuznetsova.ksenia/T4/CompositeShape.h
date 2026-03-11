@@ -8,12 +8,10 @@
 class CompositeShape : public Shape {
 private:
     std::vector<std::unique_ptr<Shape>> shapes_;
-
     void getBoundingBox(Point& min, Point& max) const;
 
 public:
     CompositeShape() = default;
-
     void addShape(std::unique_ptr<Shape> shape);
     size_t getSize() const { return shapes_.size(); }
     bool isEmpty() const { return shapes_.empty(); }

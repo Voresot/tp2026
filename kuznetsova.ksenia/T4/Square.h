@@ -9,7 +9,6 @@ private:
 
 public:
     Square(const Point& bottomLeft, double sideLength);
-
     double getArea() const override;
     Point getCenter() const override;
     void move(double dx, double dy) override;

@@ -8,4 +8,3 @@ struct Point
     Point() = default;
     Point(double xval, double yval) : x(xval), y(yval) {};
 };
-

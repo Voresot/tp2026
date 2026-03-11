@@ -41,7 +41,6 @@ void printComposite(const CompositeShape& composite) {
 
 void testRectangle() {
     std::cout << "\nRECTANGLE TESTING\n";
-
     Rectangle rect(Point(1, 1), Point(5, 4));
     std::cout << "Rectangle created with corners (1,1) and (5,4)\n";
     std::cout << "  ";
@@ -63,7 +62,6 @@ void testRectangle() {
 
 void testRing() {
     std::cout << "\nRING TESTING\n";
-
     Ring ring(Point(3, 3), 5, 2);
     std::cout << "Ring created with center (3,3), outer radius=5, inner=2\n";
     std::cout << "  ";
@@ -85,7 +83,6 @@ void testRing() {
 
 void testSquare() {
     std::cout << "\nSQUARE TESTING\n";
-
     Square square(Point(0, 0), 4);
     std::cout << "Square created with bottom-left (0,0) and side=4\n";
     std::cout << "  ";
@@ -109,7 +106,6 @@ void testCompositeOperations() {
     std::cout << "\nCOMPOSITE OPERATIONS TESTING\n";
 
     CompositeShape composite;
-
     composite.addShape(std::make_unique<Square>(Point(1, 1), 2));
     composite.addShape(std::make_unique<Ring>(Point(4, 4), 2, 1));
     composite.addShape(std::make_unique<Rectangle>(Point(2, 2), Point(5, 4)));
@@ -117,8 +113,9 @@ void testCompositeOperations() {
     std::cout << "Composite shape created with 3 elements:\n";
     std::cout << "  Number of shapes: " << composite.getSize() << "\n";
     std::cout << "  Total area: " << composite.getArea() << "\n";
+
     Point center = composite.getCenter();
-    std::cout << " Composite center: (" << center.x << ", " << center.y << ")\n\n";
+    std::cout << "  Composite center: (" << center.x << ", " << center.y << ")\n\n";
 
     std::cout << "Component shapes:\n";
     for (size_t i = 0; i < composite.getSize(); ++i) {
@@ -129,9 +126,8 @@ void testCompositeOperations() {
             << shape->getArea() << "\n";
     }
 
-    std::cout << "\nMove composite by (1, -1):\n\n";
+    std::cout << "\nMove composite by (1, -1):\n";
     composite.move(1, -1);
-
     std::cout << "New shape centers:\n";
     for (size_t i = 0; i < composite.getSize(); ++i) {
         Shape* shape = composite.getShape(i);
@@ -141,7 +137,6 @@ void testCompositeOperations() {
 
     std::cout << "\nScale composite x2:\n";
     composite.scale(2.0);
-
     std::cout << "After scaling:\n";
     for (size_t i = 0; i < composite.getSize(); ++i) {
         Shape* shape = composite.getShape(i);
@@ -176,6 +171,7 @@ void testCompositeScaleExample() {
             << ", center (" << c.x << ", " << c.y << ")\n";
     }
 
+    std::cout << "\nExecuting scale(2)...\n";
     composite.scale(2.0);
 
     std::cout << "\nAFTER scaling:\n";
@@ -190,7 +186,7 @@ void testCompositeScaleExample() {
             << ", center (" << c.x << ", " << c.y << "), area="
             << shape->getArea() << "\n";
     }
-    
+
     std::cout << "\nExpected result from example:\n";
     std::cout << "Circle should move to (-1,2)\n";
     std::cout << "Rectangle should move to (11,2)\n";
@@ -224,6 +220,7 @@ void testEdgeCases() {
     std::cout << "Size: " << empty.getSize() << "\n";
     std::cout << "Is empty? " << (empty.isEmpty() ? "yes" : "no") << "\n";
     std::cout << "Area: " << empty.getArea() << "\n";
+
     Point center = empty.getCenter();
     std::cout << "Center: (" << center.x << ", " << center.y << ")\n";
 
@@ -239,8 +236,10 @@ void testEdgeCases() {
     std::cout << "\nComposite with single shape:\n";
     CompositeShape single;
     single.addShape(std::make_unique<Square>(Point(2, 2), 2));
+
     std::cout << "Size: " << single.getSize() << "\n";
     std::cout << "Area: " << single.getArea() << "\n";
+
     center = single.getCenter();
     std::cout << "Center: (" << center.x << ", " << center.y << ")\n";
 
@@ -250,13 +249,16 @@ void testEdgeCases() {
 
     std::cout << "\nScale x3:\n";
     single.scale(3.0);
+
     std::cout << "New area: " << single.getArea() << "\n";
     center = single.getCenter();
     std::cout << "New center: (" << center.x << ", " << center.y << ")\n";
+
     shape = single.getShape(0);
     c = shape->getCenter();
     std::cout << "New shape center: (" << c.x << ", " << c.y << ")\n";
 }
+
 void testMainTask() {
     std::cout << "\n";
     std::cout << "MAIN TASK (REQUIRED OUTPUT)\n";
@@ -277,8 +279,9 @@ void testMainTask() {
     composite->addShape(std::make_unique<Rectangle>(Point(2, 0), Point(4, 2))); // rectangle 2x2
     shapes.push_back(std::move(composite));
 
-    std::cout << "BEFORE scaling (x1)::\n";
+    std::cout << "BEFORE scaling (x1):\n";
     std::cout << "------------------------\n";
+
     for (const auto& shape : shapes) {
         if (shape->getName() == "COMPOSITE") {
             printComposite(static_cast<const CompositeShape&>(*shape));
@@ -290,6 +293,8 @@ void testMainTask() {
         std::cout << "\n";
     }
 
+    std::cout << "\nScaling x2...\n\n";
+
     // Scale all shapes by factor 2
     for (auto& shape : shapes) {
         shape->scale(2.0);
@@ -297,6 +302,7 @@ void testMainTask() {
 
     std::cout << "AFTER scaling (x2):\n";
     std::cout << "---------------------------\n";
+
     for (const auto& shape : shapes) {
         if (shape->getName() == "COMPOSITE") {
             printComposite(static_cast<const CompositeShape&>(*shape));
@@ -310,11 +316,11 @@ void testMainTask() {
 }
 
 int main() {
+    setlocale(LC_ALL, "C");
 
     std::cout << "\n";
-    
-    setlocale(LC_ALL, "C");
-    
+    std::cout << "SHAPES PROGRAM TESTING\n";
+
     // Test individual shapes
     testRectangle();
     testRing();
@@ -328,5 +334,6 @@ int main() {
 
     // Main task
     testMainTask();
+
     return 0;
 }
