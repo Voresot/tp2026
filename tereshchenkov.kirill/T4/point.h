@@ -1,5 +1,5 @@
-#ifndef __POINT_H__
-#define __POINT_H__
+#ifndef _POINT_H_
+#define _POINT_H_
 
 struct Point{
   double x_=0.0;

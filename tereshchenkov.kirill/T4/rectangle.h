@@ -1,5 +1,5 @@
-#ifndef __RECTANGLE_H__
-#define __RECTANGLE_H__
+#ifndef _RECTANGLE_H_
+#define _RECTANGLE_H_
 
 #include "shape.h"
 #include "point.h"
@@ -17,4 +17,4 @@ private:
     Point topRight;
 };
 
-#endif // __RECTANGLE_H__
+#endif // _RECTANGLE_H_

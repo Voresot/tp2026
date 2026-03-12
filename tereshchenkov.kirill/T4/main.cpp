@@ -17,6 +17,7 @@ int main() {
         shapes.push_back(std::make_unique<Rectangle>(Point(0,0), Point(4,2)));
         shapes.push_back(std::make_unique<Ring>(Point(5,5), 3, 1));
         shapes.push_back(std::make_unique<Trap>(Point(1,1), 4, 2, 3));
+        shapes.push_back(std::make_unique<Rectangle>(Point(5,6), Point(10,15)));
 
         auto composite = std::make_unique<CompositeShape>();
         composite->addShape(std::make_unique<Rectangle>(Point(2,2), Point(5,4)));

@@ -2,7 +2,7 @@
 
 #include "ring.h"
 
-static const double pi = 3.14;
+static const double pi = 3.14159;
 
 Ring::Ring(const Point& center, const double r1,const double r2) : center_(center), radiusBig_(r1), radiusSmall_(r2)
 {

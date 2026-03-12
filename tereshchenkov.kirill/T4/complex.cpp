@@ -22,27 +22,21 @@ double CompositeShape::getArea() const
 
 Point CompositeShape::getCenter() const
 {
-  size_t size=shapes_.size();
-  if(size==0){
+  size_t size = shapes_.size();
+  if (size == 0) {
     return Point();
   }
-  bool flag = true;
-  double xma,xmi,yma,ymi;
-  for(size_t i=0;i<size;i++){
-    if (flag){
-      xma=shapes_[i]->getCenter().x_;
-      xmi=shapes_[i]->getCenter().x_;
-      yma=shapes_[i]->getCenter().y_;
-      ymi=shapes_[i]->getCenter().y_;
-      flag = false;
-    }
-    if (xma < shapes_[i]->getCenter().x_) xma = shapes_[i]->getCenter().x_;
-    else if(xmi > shapes_[i]->getCenter().x_) xmi = shapes_[i]->getCenter().x_;
-    if (yma < shapes_[i]->getCenter().y_) yma = shapes_[i]->getCenter().y_;
-    else if(ymi > shapes_[i]->getCenter().y_) ymi = shapes_[i]->getCenter().y_;
+
+  double sumX = 0.0;
+  double sumY = 0.0;
+
+  for (size_t i = 0; i < size; i++) {
+    Point center = shapes_[i]->getCenter();
+    sumX += center.x_;
+    sumY += center.y_;
   }
-  Rectangle a(Point(xmi,ymi), Point(xma,yma));
-  return a.getCenter();
+
+  return Point(sumX / size, sumY / size);
 }
 
 void CompositeShape::move(double dx, double dy)

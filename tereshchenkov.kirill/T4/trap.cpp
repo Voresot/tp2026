@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 Trap::Trap(const Point& bl, const double bottom, const double top, const double h) : \
-bottomLeft_(bl), topLenght_(bottom), bottomLenght_(top), height_(h)
+bottomLeft_(bl), topLenght_(top), bottomLenght_(bottom), height_(h)
 {
   if (bottomLenght_ <= 0 || topLenght_ <= 0 || height_ <= 0) {
         throw std::invalid_argument("Sides and height must be positive");
