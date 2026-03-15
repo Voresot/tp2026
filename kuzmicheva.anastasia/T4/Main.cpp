@@ -20,6 +20,13 @@ void printinfo(const std::vector<std::unique_ptr<Shape>>& figures) {
 
 int main() {
     try {
+        double factor;
+        std::cin >> factor;
+        if (std::cin.fail()) {
+            std::cerr << "ERROR: wrong factor!";
+            return 1;
+        }
+
         std::cout << std::fixed << std::setprecision(2);
 
         std::vector<std::unique_ptr<Shape>> shapes;
@@ -42,7 +49,7 @@ int main() {
         printinfo(shapes);
 
         for (size_t i = 0; i < shapes.size(); i++) {
-            shapes[i]->scale(2.0);
+            shapes[i]->scale(factor);
         }
 
         printinfo(shapes);
