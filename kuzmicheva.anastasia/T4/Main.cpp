@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
+#include <string>
 #include "CompositeShape.h"
 #include "Rhomb.h"
 #include "Shape.h"
@@ -20,10 +21,9 @@ void printinfo(const std::vector<std::unique_ptr<Shape>>& figures) {
 
 int main() {
     try {
-        double factor;
-        std::cin >> factor;
-        if (std::cin.fail()) {
-            std::cerr << "ERROR: wrong factor!";
+        std::string check;
+        if (!(std::cin >> check)) {
+            std::cerr << "No input!" << '\n';
             return 1;
         }
 
@@ -49,7 +49,7 @@ int main() {
         printinfo(shapes);
 
         for (size_t i = 0; i < shapes.size(); i++) {
-            shapes[i]->scale(factor);
+            shapes[i]->scale(2.0);
         }
 
         printinfo(shapes);
