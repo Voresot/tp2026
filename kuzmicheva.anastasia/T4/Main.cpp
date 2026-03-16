@@ -43,9 +43,13 @@ int main() {
 
         printinfo(shapes);
 
-        std::string check;
-        if (!(std::cin >> check)) {
-            std::cerr << "No input!" << '\n';
+        double factor = 0.0;
+        if (!(std::cin >> factor)) {
+            std::cerr << "Error: no scale factor provided!\n";
+            return 1;
+        }
+        if (factor <= 0.0) {
+            std::cerr << "Error: scale factor must be positive!\n";
             return 1;
         }
 
