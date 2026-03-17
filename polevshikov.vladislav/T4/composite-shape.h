@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMPOSITE_SHAPE_H
+#define COMPOSITE_SHAPE_H
 
 #include <memory>
 #include <vector>
@@ -21,3 +22,5 @@ public:
 private:
     std::vector<std::shared_ptr<Shape>> shapes_;
 };
+
+#endif

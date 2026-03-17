@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RECTANGLE_H
+#define RECTANGLE_H
 
 #include "shape.h"
 
@@ -18,3 +19,5 @@ public:
     void scale(double coefficient) override;
     std::string getName() const override;
 };
+
+#endif

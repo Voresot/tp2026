@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CIRCLE_H
+#define CIRCLE_H
 
 #include "shape.h"
 
@@ -17,3 +18,5 @@ public:
   void scale(double coefficient) override;
   std::string getName() const override;
 };
+
+#endif

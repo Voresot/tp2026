@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SHAPE_H
+#define SHAPE_H
 
 #include "point.h"
 #include <string>
@@ -14,3 +15,5 @@ public:
     virtual void scale(double coefficient) = 0;
     virtual std::string getName() const = 0;
 };
+
+#endif
