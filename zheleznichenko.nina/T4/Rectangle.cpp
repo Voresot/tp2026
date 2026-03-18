@@ -1,7 +1,11 @@
 #include "Rectangle.h"
+#include <stdexcept>
 
 Rectangle::Rectangle(const Point& bl, const Point& tr)
 {
+  if (tr.x <= bl.x || tr.y <= bl.y) {
+    throw std::invalid_argument("Invalid rectangle coordinates: topRight must be to the right and above bottomLeft");
+  }
   bottomLeft = bl;
   topRight = tr;
 }
@@ -36,6 +40,9 @@ void Rectangle::move(double dx, double dy)
 
 void Rectangle::scale(double factor)
 {
+  if (factor <= 0) {
+    throw std::invalid_argument("Scale factor must be positive");
+  }
   Point c = getCenter();
 
   bottomLeft.x = c.x + (bottomLeft.x - c.x) * factor;
