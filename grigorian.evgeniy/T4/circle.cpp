@@ -1,7 +1,6 @@
-#define _USE_MATH_DEFINES
 #include "circle.h"
 #include <stdexcept>
-#include <cmath>
+#define _USE_MATH_DEFINES
 
 Circle::Circle(const Point &center, double radius)
     : center_(center), radius_(radius) {

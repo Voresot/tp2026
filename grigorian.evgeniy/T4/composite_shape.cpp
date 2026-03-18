@@ -2,11 +2,11 @@
 #include <stdexcept>
 #include <algorithm>
 
-void CompositeShape::addShape(std::shared_ptr<Shape> shape) {
+void CompositeShape::addShape(std::unique_ptr<Shape> shape) {
     if (shape == nullptr) {
         throw std::invalid_argument("Cannot add null shape");
     }
-    shapes_.push_back(shape);
+    shapes_.push_back(std::move(shape));
 }
 
 double CompositeShape::getArea() const {
@@ -34,7 +34,7 @@ Point CompositeShape::getCenter() const {
 }
 
 void CompositeShape::move(double dx, double dy) {
-    for (auto &s : shapes_) {
+    for (const auto &s : shapes_) {
         s->move(dx, dy);
     }
 }
@@ -49,7 +49,7 @@ void CompositeShape::scale(double factor) {
         throw std::invalid_argument("Scale factor must be positive");
     }
     Point commonCenter = getCenter();
-    for (auto &s : shapes_) {
+    for (const auto &s : shapes_) {
         Point sCenter = s->getCenter();
         double dx = (sCenter.x - commonCenter.x) * factor;
         double dy = (sCenter.y - commonCenter.y) * factor;
@@ -66,9 +66,9 @@ size_t CompositeShape::getSize() const {
     return shapes_.size();
 }
 
-std::shared_ptr<Shape> CompositeShape::getShape(size_t index) const {
+const Shape* CompositeShape::getShape(size_t index) const {
     if (index >= shapes_.size()) {
         throw std::out_of_range("Index out of range");
     }
-    return shapes_[index];
+    return shapes_[index].get();
 }

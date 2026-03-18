@@ -15,7 +15,7 @@ void printShape(const Shape& shape) {
         std::cout << "[COMPOSITE, (" << std::fixed << std::setprecision(2)
                   << c.x << ", " << c.y << "), " << shape.getArea() << ":\n";
         for (size_t i = 0; i < comp->getSize(); ++i) {
-            std::shared_ptr<Shape> inner = comp->getShape(i);
+            const Shape* inner = comp->getShape(i);
             Point ic = inner->getCenter();
             std::cout << " " << inner->getName() << ", (" << std::fixed << std::setprecision(2)
                       << ic.x << ", " << ic.y << "), " << inner->getArea() << ",\n";
@@ -29,19 +29,17 @@ void printShape(const Shape& shape) {
 
 int main() {
     try {
-        auto r1 = std::make_shared<Rectangle>(Point{0.0, 0.0}, Point{4.0, 2.0});
-        auto c1 = std::make_shared<Circle>(Point{10.0, 10.0}, 5.0);
+        auto comp = std::make_unique<CompositeShape>();
+        comp->addShape(std::make_unique<Rectangle>(Point{0.0, 0.0}, Point{4.0, 2.0}));
+        comp->addShape(std::make_unique<Circle>(Point{10.0, 10.0}, 5.0));
 
-        auto comp = std::make_shared<CompositeShape>();
-        comp->addShape(r1);
-        comp->addShape(c1);
+        std::vector<std::unique_ptr<Shape>> shapes;
+        shapes.push_back(std::move(comp));
+        shapes.push_back(std::make_unique<Rectangle>(Point{1.0, 1.0}, Point{3.0, 3.0}));
+        shapes.push_back(std::make_unique<Circle>(Point{-10.0, -10.0}, 2.0));
+        shapes.push_back(std::make_unique<Rombus>(Point{-5.0, -5.0}, 4.0, 6.0));
+        shapes.push_back(std::make_unique<Rombus>(Point{5.0, 5.0}, 2.0, 2.0));
 
-        auto r2 = std::make_shared<Rectangle>(Point{1.0, 1.0}, Point{3.0, 3.0});
-        auto c2 = std::make_shared<Circle>(Point{-10.0, -10.0}, 2.0);
-        auto rh1 = std::make_shared<Rombus>(Point{-5.0, -5.0}, 4.0, 6.0);
-        auto rh2 = std::make_shared<Rombus>(Point{5.0, 5.0}, 2.0, 2.0);
-
-        std::vector<std::shared_ptr<Shape>> shapes = {comp, r2, c2, rh1, rh2};
         for (const auto& s : shapes) {
             printShape(*s);
         }
@@ -54,8 +52,9 @@ int main() {
 
         std::cout << "\n";
 
-        for (auto& s : shapes) {
-            s->scale(2.0);
+        const double scaleFactor = 2.0;
+        for (const auto& s : shapes) {
+            s->scale(scaleFactor);
         }
 
         for (const auto& s : shapes) {
