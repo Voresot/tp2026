@@ -11,8 +11,6 @@
 Ring::Ring(const Point& center, double outRad, double inRad)
 : center_(center), outR_(outRad), inR_(inRad) {
 
-data = std::make_unique<SomeDataStructure>();
-
 if (outR_ <= 0 || inR_ < 0) {
 throw std::invalid_argument("Invalid radii values.");
 }
