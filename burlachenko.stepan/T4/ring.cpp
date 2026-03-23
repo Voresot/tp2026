@@ -7,7 +7,7 @@ Ring::Ring(const Point& center, double rad1, double rad2)
     if (rad1 <= 0.0 || rad2 <= 0.0)
     {
         throw std::invalid_argument("Invalid ring radius");
-    }   
+    }
 
     center_ = center;
 
@@ -33,7 +33,7 @@ Point Ring::getCenter() const
     return center_;
 }
 
-void Ring::move(const Point& newCenter) 
+void Ring::move(const Point& newCenter)
 {
     center_ = newCenter;
 }

@@ -15,7 +15,7 @@ public:
     Point getCenter() const override;
     void move(const Point& newCenter) override;
     void scale(double ratio) override;
-    std::string getName() const override;    
+    std::string getName() const override;
 };
 
 #endif
