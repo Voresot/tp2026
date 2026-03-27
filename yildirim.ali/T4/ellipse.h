@@ -18,12 +18,12 @@ public:
     bool containsPoint(const Point& p) const override;
     double getPerimeter() const override;
     void getBoundingBox(Point& min, Point& max) const override;
-    
-    double getRx() const { 
-        return rx; 
+
+    double getRx() const {
+        return rx;
     }
-    double getRy() const { 
-        return ry; 
+    double getRy() const {
+        return ry;
     }
 };
 
