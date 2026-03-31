@@ -113,7 +113,6 @@ bool compare_data(const Datastruct& a, const Datastruct& b)
 int main()
 {
     std::vector<Datastruct> vec;
-
     std::copy(std::istream_iterator<Datastruct>(std::cin),
               std::istream_iterator<Datastruct>(),
               std::back_inserter(vec));
