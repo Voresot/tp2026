@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-
+#include <limits>
 #include "composite_shape.h"
 #include "rectangle.h"
 #include "ring.h"
@@ -48,8 +48,9 @@ int main()
 
     double scaleFactor = 0.0;
     std::cout << "Enter scale factor: ";
-    std::cin >> scaleFactor;
-    if (scaleFactor <= 0.0)
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    if (!(std::cin >> scaleFactor) || scaleFactor <= 0.0)
     {
         std::cerr << "Scale factor must be positive\n";
         return 1;
