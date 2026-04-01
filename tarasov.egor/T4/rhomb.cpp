@@ -34,3 +34,10 @@ void Rhomb::scale(double c) {
     length_ = length_ * c;
     width_ = width_ * c;
 }
+void Rhomb::getBoundingBox(double& minX, double& minY,
+                            double& maxX, double& maxY) const {
+    minX = center_.x - (length_ / 2);
+    minY = center_.y - (width_ / 2);
+    maxX = center_.x + (length_ / 2);
+    maxY = center_.y + (width_ / 2);
+}

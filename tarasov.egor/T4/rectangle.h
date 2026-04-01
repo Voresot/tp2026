@@ -12,6 +12,8 @@ public:
     void move(double a, double b) override;
     void scale(double c) override;
     std::string getName() const override;
+    void getBoundingBox(double& minX, double& minY,
+                        double& maxX, double& maxY) const override;
     Point getLeftBottom() const {
         return l_;
     }

@@ -2,6 +2,8 @@
 #include "point.h"
 #include "circle.h"
 
+constexpr double PI = 3.1415926535897932384;
+
 Circle::Circle(const Point& center, double radius) :
     center_(center),
     radius_(radius)
@@ -12,7 +14,7 @@ Circle::Circle(const Point& center, double radius) :
 }
 
 double Circle::getArea() const {
-    return (3.1415 * radius_ * radius_);
+    return (PI * radius_ * radius_);
 }
 Point Circle::getCenter() const {
     return center_;
@@ -28,4 +30,11 @@ void Circle::scale(double c) {
         return;
     }
     radius_ = radius_ * c;
+}
+void Circle::getBoundingBox(double& minX, double& minY,
+                             double& maxX, double& maxY) const {
+    minX = center_.x - radius_;
+    minY = center_.y - radius_;
+    maxX = center_.x + radius_;
+    maxY = center_.y + radius_;
 }

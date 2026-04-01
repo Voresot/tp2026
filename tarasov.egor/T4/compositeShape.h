@@ -14,7 +14,8 @@ public:
     void scale(double c) override;
     std::string getName() const override;
     void addShape(std::unique_ptr<Shape> shape);
-    void getBounds(double& minX, double& minY, double& maxX, double& maxY) const;
+    void getBoundingBox(double& minX, double& minY,
+                        double& maxX, double& maxY) const override;
     friend std::ostream& operator<<(std::ostream& os, const CompositeShape& composite);
 private:
     std::vector<std::unique_ptr<Shape>> shapes_;

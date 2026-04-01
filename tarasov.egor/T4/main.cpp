@@ -10,8 +10,8 @@
 
 void printShapes(const std::vector<std::unique_ptr<Shape>>& shapes) {
     for (size_t i = 0; i < shapes.size(); ++i) {
-        if (shapes[i]->getName() == "COMPOSITE") {
-            CompositeShape* comp = static_cast<CompositeShape*>(shapes[i].get());
+        CompositeShape* comp = dynamic_cast<CompositeShape*>(shapes[i].get());
+        if (comp) {
             std::cout << *comp << "\n";
         } else {
             std::cout << *shapes[i] << "\n";
@@ -22,7 +22,7 @@ int main() {
     try {
         std::cout << std::fixed << std::setprecision(2);
         std::vector<std::unique_ptr<Shape>> shapes;
-        shapes.push_back(std::make_unique<Rectangle>(Point(0, 0), Point(4, 3)));
+        shapes.push_back(std::make_unique<Rectangle>(Point(0, 0), Point(3, 4)));
         shapes.push_back(std::make_unique<Circle>(Point(2, 2), 3));
         shapes.push_back(std::make_unique<Rhomb>(Point(5, 5), 4, 6));
         shapes.push_back(std::make_unique<Rectangle>(Point(-3, -2), Point(1, 2)));
