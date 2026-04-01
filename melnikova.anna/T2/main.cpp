@@ -5,6 +5,7 @@
 #include <iterator>
 #include <iomanip>
 #include <cmath>
+#include <limits>
 
 namespace nspace {
     struct DataStruct {
