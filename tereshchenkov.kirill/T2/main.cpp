@@ -67,7 +67,7 @@ namespace nspace {
         in >> std::ws;
 
         while (in.peek() != ':' && in.peek() != ' ' && in.peek() != ')' && in.peek() != EOF) {
-            temp += (char)in.get();
+            temp += static_cast<char>( in.get());
         }
 
         bool hasE = (temp.find('e') != std::string::npos || temp.find('E') != std::string::npos);
@@ -96,7 +96,7 @@ namespace nspace {
         char c1, c2;
         if (in >> c1 >> c2 && (c1 == '0' && std::tolower(c2) == 'b')) {
             std::string bits;
-            while (std::isdigit(in.peek())) bits += (char)in.get();
+            while (std::isdigit(in.peek())) bits += static_cast<char>(in.get());
             if (bits.empty()) dest.ref = 0;
             else dest.ref = std::stoull(bits, nullptr, 2);
         } else in.setstate(std::ios::failbit);
