@@ -75,21 +75,16 @@ std::istream& operator>>(std::istream& in, DataStruct& data)
     std::string line;
     if (!std::getline(in, line))
     {
-        in.setstate(std::ios::failbit);
         return in;
     }
 
-    // Пропускаем пустые строки
     if (line.empty())
     {
-        in.setstate(std::ios::failbit);
         return in;
     }
 
-    // Проверяем формат: должна начинаться с '(' и заканчиваться ')'
     if (line.front() != '(' || line.back() != ')')
     {
-        in.setstate(std::ios::failbit);
         return in;
     }
 
@@ -163,13 +158,9 @@ std::istream& operator>>(std::istream& in, DataStruct& data)
     if (key1Ok && key2Ok && key3Ok)
     {
         data = result;
-        return in;
     }
-    else
-    {
-        in.setstate(std::ios::failbit);
-        return in;
-    }
+
+    return in;
 }
 
 std::ostream& operator<<(std::ostream& out, const DataStruct& data)
