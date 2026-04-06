@@ -46,8 +46,7 @@ private:
     std::basic_ios<char>::fmtflags fmt_;
 };
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
-std::istream& operator>>(std::istream& in,
-    LabelIO&& dest);
+std::istream& operator>>(std::istream& in, LabelIO&& dest);
 std::istream& operator>>(std::istream& in, ULLBinIO&& dest);
 std::istream& operator>>(std::istream& in, ComplexIO&& dest);
 std::istream& operator>>(std::istream& in, StringIO&& dest);
@@ -123,7 +122,6 @@ std::istream& operator>>(std::istream& in, ULLBinIO&& dest) {
         if (binary_str[i] == '1') {
             dest.ref += pow(2, lenbin - 1 - i);
         }
-    }
     return in;
 }
 std::istream& operator>>(std::istream& in, ComplexIO&& dest){
@@ -269,3 +267,4 @@ int main(){
 
     return 0;
 }
+
