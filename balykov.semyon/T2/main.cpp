@@ -12,12 +12,9 @@ struct DelimiterIO {
     char exp;
 };
 
-struct LabelIO {
-    std::string exp;
-};
-
 struct ULLBinIO {
     unsigned long long& ref;
+    std::string& raw;
 };
 
 struct ComplexIO {
@@ -30,6 +27,7 @@ struct StringIO {
 
 struct DataStruct {
     unsigned long long key1;
+    std::string key1Raw;
     std::complex<double> key2;
     std::string key3;
 };
@@ -46,7 +44,6 @@ private:
     std::basic_ios<char>::fmtflags fmt_;
 };
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
-std::istream& operator>>(std::istream& in, LabelIO&& dest);
 std::istream& operator>>(std::istream& in, ULLBinIO&& dest);
 std::istream& operator>>(std::istream& in,
     ComplexIO&& dest);
@@ -119,12 +116,10 @@ std::istream& operator>>(std::istream& in, ULLBinIO&& dest) {
         in.setstate(std::ios::failbit);
         return in;
     }
+    std::string key1Raw;
     dest.ref = 0;
-    int lenbin = binary_str.length();
-    for (int i = 0; i < lenbin; i++) {
-        if (binary_str[i] == '1') {
-            dest.ref += pow(2, lenbin - 1 - i);
-        }
+    for (char c : binary_str) {
+        dest.ref = dest.ref * 2 + (c - '0');
     }
     return in;
 }
@@ -144,20 +139,12 @@ std::istream& operator>>(std::istream& in, ComplexIO&& dest){
     if (in) {
         dest.ref = std::complex<double>(real, image);
     }
-    return in;
-}
-
-std::istream& operator>>(std::istream& in, LabelIO&& dest){
-    std::istream::sentry sentry(in);
-    if (!sentry) {
-        return in;
-    }
-    std::string data = "";
-    if ((in >> StringIO{ data }) && (data != dest.exp)){
+    else {
         in.setstate(std::ios::failbit);
     }
     return in;
 }
+
 std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
     if (!sentry)
@@ -178,7 +165,7 @@ std::istream& operator>>(std::istream& in, DataStruct& dest) {
             return in;
         }
         if (label == "key1" && key1_in == false) {
-            in >> ULLBinIO{input.key1};
+            in >> ULLBinIO{input.key1, input.key1Raw};
             key1_in = true;
         }
         else if (label == "key2" && key2_in == false) {
@@ -210,23 +197,7 @@ std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
         return out;
     }
     iofmtguard guard(out);
-    out << "(:key1 0b";
-    if (src.key1 == 0) {
-        out << "0";
-    }
-    else if (src.key1 == 1) {
-        out << "01";
-    }
-    else {
-        unsigned long long temp = src.key1;
-        std::string binary;
-        while (temp > 0) {
-            binary = std::to_string(temp % 2) + binary;
-            temp = temp / 2;
-        }
-        out << binary;
-    }
-
+    out << "(:key1 0b" << src.key1Raw;
     out << ":key2 #c(";
     out << std::fixed << std::setprecision(1) << src.key2.real() << " ";
     out << std::fixed << std::setprecision(1) << src.key2.imag() << "):";
@@ -239,9 +210,10 @@ bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
     if (a.key1 != b.key1) {
         return a.key1 < b.key1;
     }
+    const double eps = 1e-9;
     double mod_a = std::abs(a.key2);
     double mod_b = std::abs(b.key2);
-    if (mod_a != mod_b) {
+    if (std::abs(mod_a - mod_b) > eps) {
         return mod_a < mod_b;
     }
     return a.key3.length() < b.key3.length();
