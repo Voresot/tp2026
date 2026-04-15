@@ -3,8 +3,8 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
-#include <cmath>
 #include <limits>
+#include <sstream>
 
 bool cmp(const DataStruct& a, const DataStruct& b) {
     const double EPS = 1e-9;
@@ -20,20 +20,37 @@ bool cmp(const DataStruct& a, const DataStruct& b) {
     return a.key3 < b.key3;
 }
 
-int main() {
+int main()
+{
     std::vector<DataStruct> data;
+    std::string line;
+
+    while (std::getline(std::cin, line))
+    {
+        if (line.empty())
+        {
+            continue;
+        }
+
+        std::istringstream lineStream(line);
+        std::copy(
+            std::istream_iterator<DataStruct>(lineStream),
+            std::istream_iterator<DataStruct>(),
+            std::back_inserter(data)
+        );
+    }
+
+    if (data.empty())
+    {
+        std::cerr << "No valid data read!" << std::endl;
+        return 1;
+    }
+
+    std::sort(data.begin(), data.end(), cmp);
 
     std::copy(
-        std::istream_iterator<DataStruct>(std::cin),
-        std::istream_iterator<DataStruct>(),
-        std::back_inserter(data)
-    );
-
-    std::sort(std::begin(data), std::end(data), cmp);
-
-    std::copy(
-        std::begin(data),
-        std::end(data),
+        data.begin(),
+        data.end(),
         std::ostream_iterator<DataStruct>(std::cout, "\n")
     );
 
