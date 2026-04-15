@@ -5,6 +5,7 @@
 #include <vector>
 #include <limits>
 #include <sstream>
+#include <cmath>
 
 bool cmp(const DataStruct& a, const DataStruct& b) {
     const double EPS = 1e-9;
