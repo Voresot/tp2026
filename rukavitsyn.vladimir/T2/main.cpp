@@ -8,6 +8,7 @@
 #include <sstream>
 #include <cmath>
 #include <iomanip>
+#include <limits>
 
 struct DataStruct {
     unsigned long long key1;
@@ -65,7 +66,24 @@ std::istream& operator>>(std::istream& in, UllHexIO&& dest) {
         return in;
     }
 
-    dest.ref = std::stoull(hexStr, nullptr, 16);
+    // Исправление переполнения: проверяем длину и значение до конвертации
+    // ULL MAX = 18446744073709551615 = 0xFFFFFFFFFFFFFFFF (16 hex цифр)
+    if (hexStr.size() > 16) {
+        in.setstate(std::ios::failbit);
+        return in;
+    }
+
+    try {
+        unsigned long long value = std::stoull(hexStr, nullptr, 16);
+        dest.ref = value;
+    }
+    catch (const std::out_of_range&) {
+        in.setstate(std::ios::failbit);
+    }
+    catch (const std::invalid_argument&) {
+        in.setstate(std::ios::failbit);
+    }
+
     return in;
 }
 
@@ -258,7 +276,9 @@ bool compareDataStruct(const DataStruct& a, const DataStruct& b) {
 
     double magA = std::abs(a.key2);
     double magB = std::abs(b.key2);
-    if (magA != magB)
+    double eps = std::numeric_limits<double>::epsilon()
+        * std::max({ 1.0, magA, magB });
+    if (std::abs(magA - magB) > eps)
         return magA < magB;
 
     return a.key3.length() < b.key3.length();
@@ -270,12 +290,25 @@ int main() {
 
     while (std::getline(std::cin, line)) {
         if (line.empty()) continue;
+
         std::istringstream lineStream(line);
-        std::copy(
-            std::istream_iterator<DataStruct>(lineStream),
-            std::istream_iterator<DataStruct>(),
-            std::back_inserter(data)
-        );
+        while (lineStream) {
+            while (lineStream.good() &&
+                std::isspace(static_cast<unsigned char>(lineStream.peek())))
+                lineStream.get();
+
+            if (!lineStream || lineStream.peek() == EOF)
+                break;
+
+            DataStruct ds{};
+            if (lineStream >> ds) {
+                data.push_back(ds);
+            }
+            else {
+                lineStream.clear();
+                lineStream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            }
+        }
     }
 
     std::sort(data.begin(), data.end(), compareDataStruct);
