@@ -1,13 +1,13 @@
 #ifndef DATASTRUCT_H
 #define DATASTRUCT_H
+
 #include <iostream>
 #include <string>
 #include <iomanip>
-#include <sstream>
 
 struct DataStruct {
     double key1;
-    signed long long key2;
+    unsigned long long key2;
     std::string key3;
 };
 
@@ -15,12 +15,12 @@ struct DelimiterIO {
     char exp;
 };
 
-struct Double {
+struct DoubleIO {
     double& ref;
 };
 
-struct SLongLongIO {
-    signed long long& ref;
+struct ULongLongIO {
+    unsigned long long& ref;
 };
 
 struct StringIO {
@@ -41,8 +41,8 @@ private:
 };
 
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
-std::istream& operator>>(std::istream& in, Double&& dest);
-std::istream& operator>>(std::istream& in, SLongLongIO&& dest);
+std::istream& operator>>(std::istream& in, DoubleIO&& dest);
+std::istream& operator>>(std::istream& in, ULongLongIO&& dest);
 std::istream& operator>>(std::istream& in, StringIO&& dest);
 std::istream& operator>>(std::istream& in, DataStruct& dest);
 std::ostream& operator<<(std::ostream& out, const DataStruct& src);

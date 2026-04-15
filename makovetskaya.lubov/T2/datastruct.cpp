@@ -1,6 +1,8 @@
 #include "DataStruct.h"
+#include <cmath>
+#include <cctype>
 
-std::istream& operator>>(std::istream& in, DelimiterIO&& dest){
+std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) {
         return in;
@@ -13,38 +15,73 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest){
     return in;
 }
 
-std::istream& operator>>(std::istream& in, Double&& key){
+std::istream& operator>>(std::istream& in, DoubleIO&& key) {
     std::istream::sentry sentry(in);
     if (!sentry) {
         return in;
     }
+
     in >> key.ref;
-    if (in) {
-        char c = in.peek();
-        if (c == 'd' || c == 'D') {
-            in.get();
-        } else {
+    if (!in) {
+        return in;
+    }
+
+    char suffix = ' ';
+    if (in >> suffix) {
+        if (suffix != 'd' && suffix != 'D') {
+            in.setstate(std::ios::failbit);
+            return in;
+        }
+        char next = in.peek();
+        if (next != ':' && next != ' ' && next != '\n' && next != EOF) {
             in.setstate(std::ios::failbit);
         }
+    } else {
+        in.setstate(std::ios::failbit);
     }
+
     return in;
 }
 
-std::istream& operator>>(std::istream& in, SLongLongIO&& key){
+std::istream& operator>>(std::istream& in, ULongLongIO&& key) {
     std::istream::sentry sentry(in);
-    if (!sentry){
+    if (!sentry) {
         return in;
     }
+
     in >> key.ref;
-    if (in) {
-        char next = in.peek();
-        if (next == 'L' || next == 'l'){
-            in.get();
-            char next2 = in.peek();
-            if (next2 == 'L' || next2 == 'l'){
-                in.get();
+    if (!in) {
+        return in;
+    }
+
+    char firstChar = ' ';
+    char secondChar = ' ';
+    char thirdChar = ' ';
+
+    if (in >> firstChar) {
+        if (firstChar == 'U' || firstChar == 'u') {
+            if (in >> secondChar) {
+                if (secondChar == 'L' || secondChar == 'l') {
+                    if (in >> thirdChar) {
+                        if (thirdChar == 'L' || thirdChar == 'l') {
+                            char next = in.peek();
+                            if (next != ':' && next != ' ' && next != '\n' && next != EOF) {
+                                in.setstate(std::ios::failbit);
+                            }
+                        }
+                        else {
+                            in.setstate(std::ios::failbit);
+                        }
+                    }
+                    else {
+                        in.setstate(std::ios::failbit);
+                    }
+                }
+                else {
+                    in.setstate(std::ios::failbit);
+                }
             }
-            else{
+            else {
                 in.setstate(std::ios::failbit);
             }
         }
@@ -52,74 +89,108 @@ std::istream& operator>>(std::istream& in, SLongLongIO&& key){
             in.setstate(std::ios::failbit);
         }
     }
+    else {
+        in.setstate(std::ios::failbit);
+    }
+
     return in;
 }
 
-std::istream& operator>>(std::istream& in, StringIO&& dest){
+std::istream& operator>>(std::istream& in, StringIO&& dest) {
     std::istream::sentry sentry(in);
-    if (!sentry){
+    if (!sentry) {
         return in;
     }
-    return std::getline(in >> DelimiterIO{ '"' }, dest.ref, '"');
+
+    in >> DelimiterIO{ '"' };
+    if (!in) {
+        return in;
+    }
+
+    std::getline(in, dest.ref, '"');
+    if (!in) {
+        return in;
+    }
+
+    char next = in.peek();
+    if (next != ':' && next != ' ' && next != '\n' && next != EOF) {
+        in.setstate(std::ios::failbit);
+    }
+
+    return in;
 }
 
-std::istream& operator>>(std::istream& in, DataStruct& data){
+std::istream& operator>>(std::istream& in, DataStruct& data) {
     std::istream::sentry sentry(in);
-    if (!sentry){
+    if (!sentry) {
         return in;
     }
-    size_t currKey = 0;
-    DataStruct tmp = { 0, 0, "" };
-    bool hasKey1 = false;
-    bool hasKey2 = false;
-    bool hasKey3 = false;
-    const size_t MAX_KEYS = 3;
+
+    DataStruct tmp;
+    bool hasKey1 = false, hasKey2 = false, hasKey3 = false;
+
     in >> DelimiterIO{ '(' };
-    for (size_t i = 0; i < MAX_KEYS && in; ++i){
+
+    for (int i = 0; i < 3 && in; ++i) {
         in >> DelimiterIO{ ':' } >> DelimiterIO{ 'k' } >> DelimiterIO{ 'e' } >> DelimiterIO{ 'y' };
-        in >> currKey;
-        if (currKey == 1 && !hasKey1){
-            in >> Double{ tmp.key1 };
+
+        int keyNum;
+        in >> keyNum;
+
+        if (keyNum == 1 && !hasKey1) {
+            in >> DoubleIO{ tmp.key1 };
             hasKey1 = true;
         }
-        else if (currKey == 2 && !hasKey2){
-            in >> SLongLongIO{ tmp.key2 };
+        else if (keyNum == 2 && !hasKey2) {
+            in >> ULongLongIO{ tmp.key2 };
             hasKey2 = true;
         }
-        else if (currKey == 3 && !hasKey3){
+        else if (keyNum == 3 && !hasKey3) {
             in >> StringIO{ tmp.key3 };
             hasKey3 = true;
         }
-        else{
+        else {
             in.setstate(std::ios::failbit);
+            break;
         }
     }
+
     in >> DelimiterIO{ ':' } >> DelimiterIO{ ')' };
-    if (in && hasKey1 && hasKey2 && hasKey3){
+
+    if (in && hasKey1 && hasKey2 && hasKey3) {
         data = tmp;
-    } else {
+    }
+    else {
         in.setstate(std::ios::failbit);
     }
+
     return in;
 }
 
-std::ostream& operator<<(std::ostream& out, const DataStruct& src){
+std::ostream& operator<<(std::ostream& out, const DataStruct& src) {
     std::ostream::sentry sentry(out);
     if (!sentry) {
         return out;
     }
     iofmtguard g(out);
+
     out << "(:key1 ";
     out << std::fixed << std::setprecision(1) << src.key1 << "d:";
-    out << "key2 " << src.key2 << "ll:";
+    out << "key2 " << src.key2 << "ULL:";
     out << "key3 \"" << src.key3 << "\":)";
+
     return out;
 }
 
-iofmtguard::iofmtguard(std::basic_ios<char>& s): s_(s), width_(s.width()), fill_(s.fill()),
-precision_(s.precision()), fmt_(s.flags()){}
+iofmtguard::iofmtguard(std::basic_ios<char>& s) :
+    s_(s),
+    width_(s.width()),
+    fill_(s.fill()),
+    precision_(s.precision()),
+    fmt_(s.flags()) {
+}
 
-iofmtguard::~iofmtguard(){
+iofmtguard::~iofmtguard() {
     s_.width(width_);
     s_.fill(fill_);
     s_.precision(precision_);

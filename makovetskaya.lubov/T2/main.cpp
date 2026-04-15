@@ -3,9 +3,12 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
+#include <cmath>
+#include <limits>
 
 bool cmp(const DataStruct& a, const DataStruct& b) {
-    if (a.key1 != b.key1) {
+    const double EPS = 1e-9;
+    if (std::fabs(a.key1 - b.key1) > EPS) {
         return a.key1 < b.key1;
     }
     if (a.key2 != b.key2) {
@@ -18,26 +21,21 @@ bool cmp(const DataStruct& a, const DataStruct& b) {
 }
 
 int main() {
-    std::vector< DataStruct > data;
-    DataStruct tmp;
-    while (!std::cin.eof()) {
-        if (std::cin >> tmp) {
-            data.push_back(tmp);
-        }
-        else {
-            if (std::cin.eof()) {
-                break;
-            }
-            std::cin.clear();
-            std::cin.ignore(1);
-        }
-    }
+    std::vector<DataStruct> data;
+
+    std::copy(
+        std::istream_iterator<DataStruct>(std::cin),
+        std::istream_iterator<DataStruct>(),
+        std::back_inserter(data)
+    );
 
     std::sort(std::begin(data), std::end(data), cmp);
+
     std::copy(
         std::begin(data),
         std::end(data),
-        std::ostream_iterator< DataStruct >(std::cout, "\n")
+        std::ostream_iterator<DataStruct>(std::cout, "\n")
     );
+
     return 0;
 }
