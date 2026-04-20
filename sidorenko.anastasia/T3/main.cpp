@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iterator>
 #include <vector>
 
 using namespace std::placeholders;
@@ -178,7 +179,7 @@ struct Mean
 
 struct SumAreaIfVertexesCount
 {
-    double operator()(double sum, int size, const Polygon& poly) const
+    double operator()(double sum, size_t size, const Polygon& poly) const
     {
         if (size == poly.points.size())
         {
@@ -222,7 +223,7 @@ struct IsOddVertexes
 
 struct IsEqualVertexes
 {
-    bool operator()(const Polygon& poly, int y) const
+    bool operator()(const Polygon& poly, size_t y) const
     {
         return poly.points.size() == y;
     }
@@ -599,7 +600,7 @@ int main(int argc, char* argv[])
                         else
                         {
                             double result = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                                std::bind(SumAreaIfVertexesCount(), _1, vertexCount, _2));
+                                std::bind(SumAreaIfVertexesCount(), _1, static_cast<size_t>(vertexCount), _2));
                             std::cout << result << '\n';
                         }
                     }
@@ -692,7 +693,7 @@ int main(int argc, char* argv[])
                         else
                         {
                             auto count = std::count_if(polygons.begin(), polygons.end(),
-                                std::bind(IsEqualVertexes(), _1, vertexCount));
+                                std::bind(IsEqualVertexes(), _1, static_cast<size_t>(vertexCount)));
                             std::cout << count << '\n';
                         }
                     }
