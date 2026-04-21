@@ -49,6 +49,5 @@ std::istream& operator>>(std::istream& in, StringIO&& dest);
 std::istream& operator>>(std::istream& in, LongLongIO&& dest);
 std::istream& operator>>(std::istream& in, DataStruct& dest);
 std::ostream& operator<<(std::ostream& os, const DataStruct& data);
-bool compareDataStruct(const DataStruct& a, const DataStruct& b);
 
 #endif
