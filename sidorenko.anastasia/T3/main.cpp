@@ -349,7 +349,7 @@ struct AccumulateCrosses
 
         double xIntersect = (b.x - a.x) * static_cast<double>(p.y - a.y) /
             (b.y - a.y) + a.x;
-        if (p.x < xIntersect)
+        if (static_cast<double>(p.x) < xIntersect)
         {
             return count + 1;
         }
