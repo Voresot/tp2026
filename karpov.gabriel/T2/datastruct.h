@@ -36,11 +36,11 @@ public:
     iofmtguard(std::basic_ios<char>& s);
     ~iofmtguard();
 private:
-    std::basic_ios<char>& s_;
-    std::streamsize width_;
+    std::basic_ios<char>& stream_;
+    std::streamsize w_;
     char fill_;
-    std::streamsize precision_;
-    std::basic_ios<char>::fmtflags fmt_;
+    std::streamsize prec_;
+    std::basic_ios<char>::fmtflags flags_;
 };
 
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
@@ -49,6 +49,5 @@ std::istream& operator>>(std::istream& in, StringIO&& dest);
 std::istream& operator>>(std::istream& in, LongLongIO&& dest);
 std::istream& operator>>(std::istream& in, DataStruct& dest);
 std::ostream& operator<<(std::ostream& os, const DataStruct& data);
-bool compareDataStruct(const DataStruct& a, const DataStruct& b);
 
 #endif
