@@ -148,14 +148,16 @@ int main(int argc, char* argv[]) {
                  AreaSummator([](const Polygon&){return true;})) / container.size();
             }
             else {
-            else if(std::stoul(sub) > 2) {
-                size_t n = std::stoul(sub);
-                res = std::accumulate(container.begin(), container.end(), 0.0, AreaSummator(std::bind(isVertexCountEqual, _1, n)));
-            }
-            std::cout << std::fixed << std::setprecision(1) << res << '\n';
-            else {
-                std::cout << "<INVALID COMMAND>" << '\n';
-                std::getline(std::cin, line);
+                if(std::stoul(sub) > 2) {
+                    std::string sub; std::cin >> sub;
+                    size_t n = std::stoul(sub);
+                    res = std::accumulate(container.begin(), container.end(), 0.0, AreaSummator(std::bind(isVertexCountEqual, _1, n)));
+                    std::cout << std::fixed << std::setprecision(1) << res << '\n';
+                }
+                else {
+                    std::cout << "<INVALID COMMAND>" << '\n';
+                    std::getline(std::cin, line);
+                }
             }
         }
         else if (cmd == "MAX") {
