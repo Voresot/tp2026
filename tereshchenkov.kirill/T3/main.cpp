@@ -182,8 +182,8 @@ int main(int argc, char* argv[]) {
         if (cmd == "AREA") {
             std::string sub; std::cin >> sub;
             double res = 0;
-            if (container.empty()) { std::cout << "<INVALID COMMAND>" << '\n'; continue; }
-            if (sub == "ODD"){
+            if (container.empty()) { std::cout << "0.0" << '\n'; continue; }
+            else if (sub == "ODD"){
                 res = std::accumulate(container.begin(), container.end(), 0.0, AreaSummator(isVertexCountOdd));
                 std::cout << std::fixed << std::setprecision(1) << res << '\n';
             }
