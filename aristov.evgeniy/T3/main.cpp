@@ -9,6 +9,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <iterator>
+#include <functional> // Для стандартных функторов и std::bind
 
 struct Point {
     int x;
@@ -88,8 +89,10 @@ double getArea(const Polygon& p) {
         return acc;
     };
     AreaAccumulator initial{p.points.front(), p.points.front(), 0.0};
-    AreaAccumulator result = std::accumulate(std::next(p.points.begin()), p.points.end(), initial, accumulateArea);
-    result.sum += static_cast<double>(result.prev.x) * result.first.y - static_cast<double>(result.first.x) * result.prev.y;
+    AreaAccumulator result = std::accumulate(
+        std::next(p.points.begin()), p.points.end(), initial, accumulateArea);
+    result.sum += static_cast<double>(result.prev.x) * result.first.y -
+                  static_cast<double>(result.first.x) * result.prev.y;
     return std::abs(result.sum) / 2.0;
 }
 
@@ -104,6 +107,22 @@ struct MaxSeqState {
     size_t current;
     size_t max;
 };
+
+bool hasExtraData(std::istream& in) {
+    std::string rest;
+    std::getline(in, rest);
+    return rest.find_first_not_of(" \t\r") != std::string::npos;
+}
+
+// Вспомогательная функция для строгого парсинга числа
+size_t parseStrictSizeT(const std::string& str) {
+    size_t pos = 0;
+    size_t val = std::stoull(str, &pos);
+    if (pos != str.length()) {
+        throw std::invalid_argument("Trailing characters in number");
+    }
+    return val;
+}
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -139,92 +158,109 @@ int main(int argc, char* argv[]) {
                 std::string subcmd;
                 std::cin >> subcmd;
                 if (subcmd == "EVEN") {
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, [](double acc, const Polygon& p) {
-                        return (p.points.size() % 2 == 0) ? acc + getArea(p) : acc;
-                    });
+                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+                        [](double acc, const Polygon& p) {
+                            return (p.points.size() % 2 == 0) ? acc + getArea(p) : acc;
+                        });
                     std::cout << sum << '\n';
                 } else if (subcmd == "ODD") {
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, [](double acc, const Polygon& p) {
-                        return (p.points.size() % 2 != 0) ? acc + getArea(p) : acc;
-                    });
+                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+                        [](double acc, const Polygon& p) {
+                            return (p.points.size() % 2 != 0) ? acc + getArea(p) : acc;
+                        });
                     std::cout << sum << '\n';
                 } else if (subcmd == "MEAN") {
                     if (polygons.empty()) {
-                        throw std::invalid_argument("");
+                        throw std::invalid_argument("No polygons");
                     }
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, [](double acc, const Polygon& p) {
-                        return acc + getArea(p);
-                    });
+                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+                        [](double acc, const Polygon& p) {
+                            return acc + getArea(p);
+                        });
                     std::cout << (sum / polygons.size()) << '\n';
                 } else {
-                    size_t count = std::stoull(subcmd);
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, [count](double acc, const Polygon& p) {
-                        return (p.points.size() == count) ? acc + getArea(p) : acc;
-                    });
+                    size_t count = parseStrictSizeT(subcmd);
+                    if (count < 3) {
+                        throw std::invalid_argument("Invalid vertex count");
+                    }
+                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
+                        [count](double acc, const Polygon& p) {
+                            return (p.points.size() == count) ? acc + getArea(p) : acc;
+                        });
                     std::cout << sum << '\n';
                 }
             } else if (cmd == "MAX") {
                 std::string subcmd;
                 std::cin >> subcmd;
                 if (polygons.empty()) {
-                    throw std::invalid_argument("");
+                    throw std::invalid_argument("No polygons");
                 }
                 if (subcmd == "AREA") {
-                    auto it = std::max_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
-                        return getArea(a) < getArea(b);
-                    });
+                    auto it = std::max_element(polygons.begin(), polygons.end(),
+                        [](const Polygon& a, const Polygon& b) {
+                            return std::less<double>{}(getArea(a), getArea(b)); // Использование стандартного функтора
+                        });
                     std::cout << getArea(*it) << '\n';
                 } else if (subcmd == "VERTEXES") {
-                    auto it = std::max_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
-                        return a.points.size() < b.points.size();
-                    });
+                    auto it = std::max_element(polygons.begin(), polygons.end(),
+                        [](const Polygon& a, const Polygon& b) {
+                            return std::less<size_t>{}(a.points.size(), b.points.size());
+                        });
                     std::cout << it->points.size() << '\n';
                 } else {
-                    throw std::invalid_argument("");
+                    throw std::invalid_argument("Invalid subcmd");
                 }
             } else if (cmd == "MIN") {
                 std::string subcmd;
                 std::cin >> subcmd;
                 if (polygons.empty()) {
-                    throw std::invalid_argument("");
+                    throw std::invalid_argument("No polygons");
                 }
                 if (subcmd == "AREA") {
-                    auto it = std::min_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
-                        return getArea(a) < getArea(b);
-                    });
+                    auto it = std::min_element(polygons.begin(), polygons.end(),
+                        [](const Polygon& a, const Polygon& b) {
+                            return std::less<double>{}(getArea(a), getArea(b));
+                        });
                     std::cout << getArea(*it) << '\n';
                 } else if (subcmd == "VERTEXES") {
-                    auto it = std::min_element(polygons.begin(), polygons.end(), [](const Polygon& a, const Polygon& b) {
-                        return a.points.size() < b.points.size();
-                    });
+                    auto it = std::min_element(polygons.begin(), polygons.end(),
+                        [](const Polygon& a, const Polygon& b) {
+                            return std::less<size_t>{}(a.points.size(), b.points.size());
+                        });
                     std::cout << it->points.size() << '\n';
                 } else {
-                    throw std::invalid_argument("");
+                    throw std::invalid_argument("Invalid subcmd");
                 }
             } else if (cmd == "COUNT") {
                 std::string subcmd;
                 std::cin >> subcmd;
                 if (subcmd == "EVEN") {
-                    size_t res = std::count_if(polygons.begin(), polygons.end(), [](const Polygon& p) {
-                        return p.points.size() % 2 == 0;
-                    });
+                    size_t res = std::count_if(polygons.begin(), polygons.end(),
+                        [](const Polygon& p) {
+                            return p.points.size() % 2 == 0;
+                        });
                     std::cout << res << '\n';
                 } else if (subcmd == "ODD") {
-                    size_t res = std::count_if(polygons.begin(), polygons.end(), [](const Polygon& p) {
-                        return p.points.size() % 2 != 0;
-                    });
+                    size_t res = std::count_if(polygons.begin(), polygons.end(),
+                        [](const Polygon& p) {
+                            return p.points.size() % 2 != 0;
+                        });
                     std::cout << res << '\n';
                 } else {
-                    size_t num = std::stoull(subcmd);
-                    size_t res = std::count_if(polygons.begin(), polygons.end(), [num](const Polygon& p) {
-                        return p.points.size() == num;
-                    });
+                    size_t num = parseStrictSizeT(subcmd);
+                    if (num < 3) {
+                        throw std::invalid_argument("Invalid vertex count");
+                    }
+                    size_t res = std::count_if(polygons.begin(), polygons.end(),
+                        [num](const Polygon& p) {
+                            return std::equal_to<size_t>{}(p.points.size(), num);
+                        });
                     std::cout << res << '\n';
                 }
             } else if (cmd == "INFRAME") {
                 Polygon target;
-                if (!(std::cin >> target)) {
-                    throw std::invalid_argument("");
+                if (!(std::cin >> target) || hasExtraData(std::cin)) {
+                    throw std::invalid_argument("Invalid target polygon");
                 }
                 auto expandBBoxWithPoint = [](BBox box, const Point& pt) {
                     return BBox{
@@ -235,10 +271,13 @@ int main(int argc, char* argv[]) {
                     };
                 };
                 auto expandBBoxWithPolygon = [&expandBBoxWithPoint](BBox box, const Polygon& poly) {
-                    return std::accumulate(poly.points.begin(), poly.points.end(), box, expandBBoxWithPoint);
+                    return std::accumulate(
+                        poly.points.begin(), poly.points.end(), box, expandBBoxWithPoint);
                 };
-                BBox globalBox = std::accumulate(polygons.begin(), polygons.end(), BBox{}, expandBBoxWithPolygon);
-                BBox targetBox = std::accumulate(target.points.begin(), target.points.end(), BBox{}, expandBBoxWithPoint);
+                BBox globalBox = std::accumulate(
+                    polygons.begin(), polygons.end(), BBox{}, expandBBoxWithPolygon);
+                BBox targetBox = std::accumulate(
+                    target.points.begin(), target.points.end(), BBox{}, expandBBoxWithPoint);
                 bool isInFrame = false;
                 if (!polygons.empty()) {
                     isInFrame = (targetBox.minX >= globalBox.minX && targetBox.maxX <= globalBox.maxX &&
@@ -247,8 +286,8 @@ int main(int argc, char* argv[]) {
                 std::cout << (isInFrame ? "<TRUE>" : "<FALSE>") << '\n';
             } else if (cmd == "MAXSEQ") {
                 Polygon target;
-                if (!(std::cin >> target)) {
-                    throw std::invalid_argument("");
+                if (!(std::cin >> target) || hasExtraData(std::cin)) {
+                    throw std::invalid_argument("Invalid target polygon");
                 }
                 auto seqAccumulator = [&target](MaxSeqState acc, const Polygon& p) {
                     if (p == target) {
@@ -256,10 +295,11 @@ int main(int argc, char* argv[]) {
                     }
                     return MaxSeqState{0, acc.max};
                 };
-                MaxSeqState res = std::accumulate(polygons.begin(), polygons.end(), MaxSeqState{0, 0}, seqAccumulator);
+                MaxSeqState res = std::accumulate(
+                    polygons.begin(), polygons.end(), MaxSeqState{0, 0}, seqAccumulator);
                 std::cout << res.max << '\n';
             } else {
-                throw std::invalid_argument("");
+                throw std::invalid_argument("Unknown command");
             }
         } catch (...) {
             std::cout << "<INVALID COMMAND>\n";
