@@ -8,6 +8,7 @@
 #include <limits>
 #include <cmath>
 #include <stdexcept>
+#include <iterator>
 
 struct Point {
     int x;
