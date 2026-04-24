@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -9,7 +10,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <iterator>
-#include <functional> // Для стандартных функторов и std::bind
+#include <functional>
 
 struct Point {
     int x;
@@ -84,7 +85,8 @@ double getArea(const Polygon& p) {
         return 0.0;
     }
     auto accumulateArea = [](AreaAccumulator acc, const Point& curr) {
-        acc.sum += static_cast<double>(acc.prev.x) * curr.y - static_cast<double>(curr.x) * acc.prev.y;
+        acc.sum += static_cast<double>(acc.prev.x) * curr.y -
+                   static_cast<double>(curr.x) * acc.prev.y;
         acc.prev = curr;
         return acc;
     };
@@ -108,13 +110,6 @@ struct MaxSeqState {
     size_t max;
 };
 
-bool hasExtraData(std::istream& in) {
-    std::string rest;
-    std::getline(in, rest);
-    return rest.find_first_not_of(" \t\r") != std::string::npos;
-}
-
-// Вспомогательная функция для строгого парсинга числа
 size_t parseStrictSizeT(const std::string& str) {
     size_t pos = 0;
     size_t val = std::stoull(str, &pos);
@@ -151,12 +146,22 @@ int main(int argc, char* argv[]) {
 
     std::cout << std::fixed << std::setprecision(1);
 
-    std::string cmd;
-    while (std::cin >> cmd) {
+    std::string line;
+    while (std::getline(std::cin, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        std::istringstream iss(line);
+        std::string cmd;
+        iss >> cmd;
+
         try {
             if (cmd == "AREA") {
                 std::string subcmd;
-                std::cin >> subcmd;
+                iss >> subcmd;
+                if (iss >> std::ws && !iss.eof()) {
+                    throw std::invalid_argument("");
+                }
                 if (subcmd == "EVEN") {
                     double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
                         [](double acc, const Polygon& p) {
@@ -171,7 +176,7 @@ int main(int argc, char* argv[]) {
                     std::cout << sum << '\n';
                 } else if (subcmd == "MEAN") {
                     if (polygons.empty()) {
-                        throw std::invalid_argument("No polygons");
+                        throw std::invalid_argument("");
                     }
                     double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
                         [](double acc, const Polygon& p) {
@@ -181,7 +186,7 @@ int main(int argc, char* argv[]) {
                 } else {
                     size_t count = parseStrictSizeT(subcmd);
                     if (count < 3) {
-                        throw std::invalid_argument("Invalid vertex count");
+                        throw std::invalid_argument("");
                     }
                     double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
                         [count](double acc, const Polygon& p) {
@@ -191,14 +196,17 @@ int main(int argc, char* argv[]) {
                 }
             } else if (cmd == "MAX") {
                 std::string subcmd;
-                std::cin >> subcmd;
+                iss >> subcmd;
+                if (iss >> std::ws && !iss.eof()) {
+                    throw std::invalid_argument("");
+                }
                 if (polygons.empty()) {
-                    throw std::invalid_argument("No polygons");
+                    throw std::invalid_argument("");
                 }
                 if (subcmd == "AREA") {
                     auto it = std::max_element(polygons.begin(), polygons.end(),
                         [](const Polygon& a, const Polygon& b) {
-                            return std::less<double>{}(getArea(a), getArea(b)); // Использование стандартного функтора
+                            return std::less<double>{}(getArea(a), getArea(b));
                         });
                     std::cout << getArea(*it) << '\n';
                 } else if (subcmd == "VERTEXES") {
@@ -208,13 +216,16 @@ int main(int argc, char* argv[]) {
                         });
                     std::cout << it->points.size() << '\n';
                 } else {
-                    throw std::invalid_argument("Invalid subcmd");
+                    throw std::invalid_argument("");
                 }
             } else if (cmd == "MIN") {
                 std::string subcmd;
-                std::cin >> subcmd;
+                iss >> subcmd;
+                if (iss >> std::ws && !iss.eof()) {
+                    throw std::invalid_argument("");
+                }
                 if (polygons.empty()) {
-                    throw std::invalid_argument("No polygons");
+                    throw std::invalid_argument("");
                 }
                 if (subcmd == "AREA") {
                     auto it = std::min_element(polygons.begin(), polygons.end(),
@@ -229,11 +240,14 @@ int main(int argc, char* argv[]) {
                         });
                     std::cout << it->points.size() << '\n';
                 } else {
-                    throw std::invalid_argument("Invalid subcmd");
+                    throw std::invalid_argument("");
                 }
             } else if (cmd == "COUNT") {
                 std::string subcmd;
-                std::cin >> subcmd;
+                iss >> subcmd;
+                if (iss >> std::ws && !iss.eof()) {
+                    throw std::invalid_argument("");
+                }
                 if (subcmd == "EVEN") {
                     size_t res = std::count_if(polygons.begin(), polygons.end(),
                         [](const Polygon& p) {
@@ -249,7 +263,7 @@ int main(int argc, char* argv[]) {
                 } else {
                     size_t num = parseStrictSizeT(subcmd);
                     if (num < 3) {
-                        throw std::invalid_argument("Invalid vertex count");
+                        throw std::invalid_argument("");
                     }
                     size_t res = std::count_if(polygons.begin(), polygons.end(),
                         [num](const Polygon& p) {
@@ -259,8 +273,11 @@ int main(int argc, char* argv[]) {
                 }
             } else if (cmd == "INFRAME") {
                 Polygon target;
-                if (!(std::cin >> target) || hasExtraData(std::cin)) {
-                    throw std::invalid_argument("Invalid target polygon");
+                if (!(iss >> target)) {
+                    throw std::invalid_argument("");
+                }
+                if (iss >> std::ws && !iss.eof()) {
+                    throw std::invalid_argument("");
                 }
                 auto expandBBoxWithPoint = [](BBox box, const Point& pt) {
                     return BBox{
@@ -280,18 +297,24 @@ int main(int argc, char* argv[]) {
                     target.points.begin(), target.points.end(), BBox{}, expandBBoxWithPoint);
                 bool isInFrame = false;
                 if (!polygons.empty()) {
-                    isInFrame = (targetBox.minX >= globalBox.minX && targetBox.maxX <= globalBox.maxX &&
-                                 targetBox.minY >= globalBox.minY && targetBox.maxY <= globalBox.maxY);
+                    isInFrame = (targetBox.minX >= globalBox.minX &&
+                                 targetBox.maxX <= globalBox.maxX &&
+                                 targetBox.minY >= globalBox.minY &&
+                                 targetBox.maxY <= globalBox.maxY);
                 }
                 std::cout << (isInFrame ? "<TRUE>" : "<FALSE>") << '\n';
             } else if (cmd == "MAXSEQ") {
                 Polygon target;
-                if (!(std::cin >> target) || hasExtraData(std::cin)) {
-                    throw std::invalid_argument("Invalid target polygon");
+                if (!(iss >> target)) {
+                    throw std::invalid_argument("");
+                }
+                if (iss >> std::ws && !iss.eof()) {
+                    throw std::invalid_argument("");
                 }
                 auto seqAccumulator = [&target](MaxSeqState acc, const Polygon& p) {
                     if (p == target) {
-                        return MaxSeqState{acc.current + 1, std::max(acc.max, acc.current + 1)};
+                        return MaxSeqState{acc.current + 1,
+                                          std::max(acc.max, acc.current + 1)};
                     }
                     return MaxSeqState{0, acc.max};
                 };
@@ -299,12 +322,10 @@ int main(int argc, char* argv[]) {
                     polygons.begin(), polygons.end(), MaxSeqState{0, 0}, seqAccumulator);
                 std::cout << res.max << '\n';
             } else {
-                throw std::invalid_argument("Unknown command");
+                throw std::invalid_argument("");
             }
         } catch (...) {
             std::cout << "<INVALID COMMAND>\n";
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
 
