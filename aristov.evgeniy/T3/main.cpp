@@ -61,11 +61,7 @@ std::istream& operator>>(std::istream& in, Polygon& p) {
         return in;
     }
     std::vector<Point> pts;
-    std::generate_n(std::back_inserter(pts), count, [&in]() {
-        Point pt;
-        in >> pt;
-        return pt;
-    });
+    std::copy_n(std::istream_iterator<Point>(in), count, std::back_inserter(pts));
     if (in) {
         p.points = std::move(pts);
     } else {
@@ -80,22 +76,59 @@ struct AreaAccumulator {
     double sum;
 };
 
+AreaAccumulator accumulateAreaFunc(AreaAccumulator acc, const Point& curr) {
+    acc.sum += static_cast<double>(acc.prev.x) * curr.y -
+               static_cast<double>(curr.x) * acc.prev.y;
+    acc.prev = curr;
+    return acc;
+}
+
 double getArea(const Polygon& p) {
     if (p.points.size() < 3) {
         return 0.0;
     }
-    auto accumulateArea = [](AreaAccumulator acc, const Point& curr) {
-        acc.sum += static_cast<double>(acc.prev.x) * curr.y -
-                   static_cast<double>(curr.x) * acc.prev.y;
-        acc.prev = curr;
-        return acc;
-    };
     AreaAccumulator initial{p.points.front(), p.points.front(), 0.0};
     AreaAccumulator result = std::accumulate(
-        std::next(p.points.begin()), p.points.end(), initial, accumulateArea);
+        std::next(p.points.begin()), p.points.end(), initial, accumulateAreaFunc);
     result.sum += static_cast<double>(result.prev.x) * result.first.y -
                   static_cast<double>(result.first.x) * result.prev.y;
     return std::abs(result.sum) / 2.0;
+}
+
+double addAreaIfEven(double acc, const Polygon& p) {
+    return (p.points.size() % 2 == 0) ? acc + getArea(p) : acc;
+}
+
+double addAreaIfOdd(double acc, const Polygon& p) {
+    return (p.points.size() % 2 != 0) ? acc + getArea(p) : acc;
+}
+
+double addAreaIfEqual(double acc, const Polygon& p, size_t count) {
+    return (p.points.size() == count) ? acc + getArea(p) : acc;
+}
+
+double addArea(double acc, const Polygon& p) {
+    return acc + getArea(p);
+}
+
+bool compareArea(const Polygon& a, const Polygon& b) {
+    return getArea(a) < getArea(b);
+}
+
+bool compareVertexes(const Polygon& a, const Polygon& b) {
+    return a.points.size() < b.points.size();
+}
+
+bool isEven(const Polygon& p) {
+    return p.points.size() % 2 == 0;
+}
+
+bool isOdd(const Polygon& p) {
+    return p.points.size() % 2 != 0;
+}
+
+bool isEqualSize(const Polygon& p, size_t count) {
+    return p.points.size() == count;
 }
 
 struct BBox {
@@ -105,16 +138,37 @@ struct BBox {
     int maxY = std::numeric_limits<int>::min();
 };
 
+BBox expandBBoxWithPoint(BBox box, const Point& pt) {
+    return BBox{
+        std::min(box.minX, pt.x),
+        std::max(box.maxX, pt.x),
+        std::min(box.minY, pt.y),
+        std::max(box.maxY, pt.y)
+    };
+}
+
+BBox expandBBoxWithPolygon(BBox box, const Polygon& poly) {
+    return std::accumulate(
+        poly.points.begin(), poly.points.end(), box, expandBBoxWithPoint);
+}
+
 struct MaxSeqState {
     size_t current;
     size_t max;
 };
 
+MaxSeqState seqAccumulator(MaxSeqState acc, const Polygon& p, const Polygon& target) {
+    if (p == target) {
+        return MaxSeqState{acc.current + 1, std::max(acc.max, acc.current + 1)};
+    }
+    return MaxSeqState{0, acc.max};
+}
+
 size_t parseStrictSizeT(const std::string& str) {
     size_t pos = 0;
     size_t val = std::stoull(str, &pos);
     if (pos != str.length()) {
-        throw std::invalid_argument("Trailing characters in number");
+        throw std::invalid_argument("");
     }
     return val;
 }
@@ -132,7 +186,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::vector<Polygon> polygons;
-    while (file) {
+    while (!file.eof()) {
         std::copy(
             std::istream_iterator<Polygon>(file),
             std::istream_iterator<Polygon>(),
@@ -163,25 +217,16 @@ int main(int argc, char* argv[]) {
                     throw std::invalid_argument("");
                 }
                 if (subcmd == "EVEN") {
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                        [](double acc, const Polygon& p) {
-                            return (p.points.size() % 2 == 0) ? acc + getArea(p) : acc;
-                        });
+                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, addAreaIfEven);
                     std::cout << sum << '\n';
                 } else if (subcmd == "ODD") {
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                        [](double acc, const Polygon& p) {
-                            return (p.points.size() % 2 != 0) ? acc + getArea(p) : acc;
-                        });
+                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, addAreaIfOdd);
                     std::cout << sum << '\n';
                 } else if (subcmd == "MEAN") {
                     if (polygons.empty()) {
                         throw std::invalid_argument("");
                     }
-                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                        [](double acc, const Polygon& p) {
-                            return acc + getArea(p);
-                        });
+                    double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0, addArea);
                     std::cout << (sum / polygons.size()) << '\n';
                 } else {
                     size_t count = parseStrictSizeT(subcmd);
@@ -189,9 +234,7 @@ int main(int argc, char* argv[]) {
                         throw std::invalid_argument("");
                     }
                     double sum = std::accumulate(polygons.begin(), polygons.end(), 0.0,
-                        [count](double acc, const Polygon& p) {
-                            return (p.points.size() == count) ? acc + getArea(p) : acc;
-                        });
+                        std::bind(addAreaIfEqual, std::placeholders::_1, std::placeholders::_2, count));
                     std::cout << sum << '\n';
                 }
             } else if (cmd == "MAX") {
@@ -204,16 +247,10 @@ int main(int argc, char* argv[]) {
                     throw std::invalid_argument("");
                 }
                 if (subcmd == "AREA") {
-                    auto it = std::max_element(polygons.begin(), polygons.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return std::less<double>{}(getArea(a), getArea(b));
-                        });
+                    auto it = std::max_element(polygons.begin(), polygons.end(), compareArea);
                     std::cout << getArea(*it) << '\n';
                 } else if (subcmd == "VERTEXES") {
-                    auto it = std::max_element(polygons.begin(), polygons.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return std::less<size_t>{}(a.points.size(), b.points.size());
-                        });
+                    auto it = std::max_element(polygons.begin(), polygons.end(), compareVertexes);
                     std::cout << it->points.size() << '\n';
                 } else {
                     throw std::invalid_argument("");
@@ -228,16 +265,10 @@ int main(int argc, char* argv[]) {
                     throw std::invalid_argument("");
                 }
                 if (subcmd == "AREA") {
-                    auto it = std::min_element(polygons.begin(), polygons.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return std::less<double>{}(getArea(a), getArea(b));
-                        });
+                    auto it = std::min_element(polygons.begin(), polygons.end(), compareArea);
                     std::cout << getArea(*it) << '\n';
                 } else if (subcmd == "VERTEXES") {
-                    auto it = std::min_element(polygons.begin(), polygons.end(),
-                        [](const Polygon& a, const Polygon& b) {
-                            return std::less<size_t>{}(a.points.size(), b.points.size());
-                        });
+                    auto it = std::min_element(polygons.begin(), polygons.end(), compareVertexes);
                     std::cout << it->points.size() << '\n';
                 } else {
                     throw std::invalid_argument("");
@@ -249,16 +280,10 @@ int main(int argc, char* argv[]) {
                     throw std::invalid_argument("");
                 }
                 if (subcmd == "EVEN") {
-                    size_t res = std::count_if(polygons.begin(), polygons.end(),
-                        [](const Polygon& p) {
-                            return p.points.size() % 2 == 0;
-                        });
+                    size_t res = std::count_if(polygons.begin(), polygons.end(), isEven);
                     std::cout << res << '\n';
                 } else if (subcmd == "ODD") {
-                    size_t res = std::count_if(polygons.begin(), polygons.end(),
-                        [](const Polygon& p) {
-                            return p.points.size() % 2 != 0;
-                        });
+                    size_t res = std::count_if(polygons.begin(), polygons.end(), isOdd);
                     std::cout << res << '\n';
                 } else {
                     size_t num = parseStrictSizeT(subcmd);
@@ -266,9 +291,7 @@ int main(int argc, char* argv[]) {
                         throw std::invalid_argument("");
                     }
                     size_t res = std::count_if(polygons.begin(), polygons.end(),
-                        [num](const Polygon& p) {
-                            return std::equal_to<size_t>{}(p.points.size(), num);
-                        });
+                        std::bind(isEqualSize, std::placeholders::_1, num));
                     std::cout << res << '\n';
                 }
             } else if (cmd == "INFRAME") {
@@ -279,18 +302,6 @@ int main(int argc, char* argv[]) {
                 if (iss >> std::ws && !iss.eof()) {
                     throw std::invalid_argument("");
                 }
-                auto expandBBoxWithPoint = [](BBox box, const Point& pt) {
-                    return BBox{
-                        std::min(box.minX, pt.x),
-                        std::max(box.maxX, pt.x),
-                        std::min(box.minY, pt.y),
-                        std::max(box.maxY, pt.y)
-                    };
-                };
-                auto expandBBoxWithPolygon = [&expandBBoxWithPoint](BBox box, const Polygon& poly) {
-                    return std::accumulate(
-                        poly.points.begin(), poly.points.end(), box, expandBBoxWithPoint);
-                };
                 BBox globalBox = std::accumulate(
                     polygons.begin(), polygons.end(), BBox{}, expandBBoxWithPolygon);
                 BBox targetBox = std::accumulate(
@@ -311,15 +322,9 @@ int main(int argc, char* argv[]) {
                 if (iss >> std::ws && !iss.eof()) {
                     throw std::invalid_argument("");
                 }
-                auto seqAccumulator = [&target](MaxSeqState acc, const Polygon& p) {
-                    if (p == target) {
-                        return MaxSeqState{acc.current + 1,
-                                          std::max(acc.max, acc.current + 1)};
-                    }
-                    return MaxSeqState{0, acc.max};
-                };
                 MaxSeqState res = std::accumulate(
-                    polygons.begin(), polygons.end(), MaxSeqState{0, 0}, seqAccumulator);
+                    polygons.begin(), polygons.end(), MaxSeqState{0, 0},
+                    std::bind(seqAccumulator, std::placeholders::_1, std::placeholders::_2, target));
                 std::cout << res.max << '\n';
             } else {
                 throw std::invalid_argument("");
